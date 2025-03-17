@@ -1,0 +1,21 @@
+### Create a Task
+POST http://localhost:4444/api/tasks HTTP/1.1
+content-type: application/json
+
+{
+    "title": "Example Title"
+}
+
+### Get all Tasks
+GET http://localhost:4444/api/tasks HTTP/1.1
+
+### Update a Task
+PUT http://localhost:4444/api/tasks/67d89ea2ca87c5dacd507577 HTTP/1.1
+content-type: application/json
+
+{
+    "completed": true
+}
+
+### Delete a Task
+DELETE http://localhost:4444/api/tasks/67d89ea2ca87c5dacd507577 HTTP/1.1
