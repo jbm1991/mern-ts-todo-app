@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { addTask, fetchTasks } from "../api/tasks";
+import { addTask, fetchTasks, deleteTask } from "../api/tasks";
 
 interface Task {
   _id: string;
@@ -32,6 +32,15 @@ const Home = () => {
     }
   };
 
+  const handleDeleteTask = async (taskId: string) => {
+    const isDeleted = await deleteTask(taskId);
+    if (isDeleted) {
+      setTasks(tasks.filter((task) => task._id !== taskId));
+    } else {
+      setError("Failed to delete task. Try again.");
+    }
+  };
+
   return (
     <div>
       <h1>Task List</h1>
@@ -56,6 +65,12 @@ const Home = () => {
           {tasks.map((task) => (
             <li key={task._id}>
               {task.title} {task.completed ? "✅" : "❌"}
+              <button
+                className="delete-btn"
+                onClick={() => handleDeleteTask(task._id)}
+              >
+                🗑️
+              </button>
             </li>
           ))}
         </ul>

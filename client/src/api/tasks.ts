@@ -25,3 +25,16 @@ export const addTask = async (title: string) => {
     return null;
   }
 };
+
+export const deleteTask = async (taskId: string) => {
+  try {
+    const response = await fetch(`${API_URL}/${taskId}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) throw new Error("Failed to delete task");
+    return true;
+  } catch (error) {
+    console.error(`Error deleting task: ${error}`);
+    return false;
+  }
+};
