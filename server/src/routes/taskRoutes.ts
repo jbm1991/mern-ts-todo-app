@@ -9,11 +9,9 @@ interface TaskRequestBody {
   completed: boolean;
 }
 
-interface TaskRequestParams {
-  id: string;
+interface TaskUpdateBody {
+  completed: boolean;
 }
-
-interface TaskResponseBody {}
 
 // Middleware for validation errors
 const validateTask = [
@@ -55,28 +53,35 @@ router.post(
   }
 );
 
-// Update a task
+// Update a task (toggle completion)
 router.put(
   "/:id",
-  async (
-    req: Request<TaskRequestParams, {}, TaskRequestBody>,
-    res: Response,
-    next: NextFunction
-  ) => {
+  async (req: Request<{ id: string }, {}, TaskUpdateBody>, res: Response) => {
     try {
       const { completed } = req.body;
+
+      if (typeof completed !== "boolean") {
+        res.status(400).json({ error: "Completed must be a boolean" });
+        return;
+      }
+
       const updatedTask = await Task.findByIdAndUpdate(
         req.params.id,
         { completed },
-        {
-          new: true,
-        }
+        { new: true } // Returns the updated task
       );
-      if (!updatedTask)
-        return res.status(404).json({ error: "Task not found" });
+
+      if (!updatedTask) {
+        res.status(404).json({ error: "Task not found" });
+        return;
+      }
+
       res.json(updatedTask);
+      return;
     } catch (error) {
-      next(error);
+      console.error("Error updating task:", error);
+      res.status(500).json({ error: "Failed to update task" });
+      return;
     }
   }
 );
