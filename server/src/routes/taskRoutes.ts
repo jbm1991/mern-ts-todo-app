@@ -6,7 +6,14 @@ import Task from "../models/Task";
 const router = express.Router();
 interface TaskRequestBody {
   title: string;
+  completed: boolean;
 }
+
+interface TaskRequestParams {
+  id: string;
+}
+
+interface TaskResponseBody {}
 
 // Middleware for validation errors
 const validateTask = [
@@ -49,16 +56,30 @@ router.post(
 );
 
 // Update a task
-router.put("/:id", async (req, res) => {
-  try {
-    const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    res.json(updatedTask);
-  } catch (error) {
-    res.status(400).json({ error: "Failed to update task" });
+router.put(
+  "/:id",
+  async (
+    req: Request<TaskRequestParams, {}, TaskRequestBody>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { completed } = req.body;
+      const updatedTask = await Task.findByIdAndUpdate(
+        req.params.id,
+        { completed },
+        {
+          new: true,
+        }
+      );
+      if (!updatedTask)
+        return res.status(404).json({ error: "Task not found" });
+      res.json(updatedTask);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 // Delete a task
 router.delete("/:id", async (req, res) => {
