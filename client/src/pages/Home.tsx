@@ -1,11 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { addTask, fetchTasks, deleteTask, updateTask } from "../api/tasks";
-
-interface Task {
-  _id: string;
-  title: string;
-  completed: boolean;
-}
+import TaskList from "../components/TaskList";
+import { Task } from "../types";
 
 const Home = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -20,41 +16,45 @@ const Home = () => {
     });
   }, []);
 
-  const handleAddTask = async () => {
+  const handleAddTask = useCallback(async () => {
     if (!newTask.trim()) return;
 
     const createdTask = await addTask(newTask);
     if (createdTask) {
-      setTasks([...tasks, createdTask]);
+      setTasks((prev) => [...prev, createdTask]);
       setNewTask("");
     } else {
       setError("Failed to add task. Try again.");
     }
-  };
+  }, [newTask]);
 
-  const handleDeleteTask = async (taskId: string) => {
+  const handleDeleteTask = useCallback(async (taskId: string) => {
     const isDeleted = await deleteTask(taskId);
     if (isDeleted) {
-      setTasks(tasks.filter((task) => task._id !== taskId));
+      setTasks((prev) => prev.filter((task) => task._id !== taskId));
     } else {
       setError("Failed to delete task. Try again.");
     }
-  };
+  }, []);
 
-  const handleToggleTask = async (taskId: string, completed: boolean) => {
-    const updatedTask = await updateTask(taskId, !completed);
-    if (updatedTask) {
-      setTasks(tasks.map((task) => (task._id === taskId ? updatedTask : task)));
-    } else {
-      setError("Failed to update task. Try again.");
-    }
-  };
+  const handleToggleTask = useCallback(
+    async (taskId: string, completed: boolean) => {
+      const updatedTask = await updateTask(taskId, !completed);
+      if (updatedTask) {
+        setTasks((prev) =>
+          prev.map((task) => (task._id === taskId ? updatedTask : task))
+        );
+      } else {
+        setError("Failed to update task. Try again.");
+      }
+    },
+    []
+  );
 
   return (
     <div className="container">
       <h1>Task List</h1>
 
-      {/** Add Task Form */}
       <div className="task-input">
         <input
           type="text"
@@ -70,21 +70,11 @@ const Home = () => {
       {loading ? (
         <p>Loading tasks...</p>
       ) : (
-        <ul className="task-list">
-          {tasks.map((task) => (
-            <li key={task._id} className={task.completed ? "completed" : ""}>
-              <span onClick={() => handleToggleTask(task._id, task.completed)}>
-                {task.completed ? "✅" : "⭕️"} {task.title}
-              </span>
-              <button
-                className="delete-btn"
-                onClick={() => handleDeleteTask(task._id)}
-              >
-                ❌
-              </button>
-            </li>
-          ))}
-        </ul>
+        <TaskList
+          tasks={tasks}
+          handleDeleteTask={handleDeleteTask}
+          handleToggleTask={handleToggleTask}
+        />
       )}
     </div>
   );
