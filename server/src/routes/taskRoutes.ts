@@ -1,7 +1,7 @@
-import express from "express";
-import { Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { body, validationResult } from "express-validator";
 import Task from "../models/Task";
+import { authenticate, AuthRequest } from "../middleware/auth";
 
 const router = express.Router();
 interface TaskRequestBody {
@@ -18,10 +18,13 @@ const validateTask = [
   body("title").notEmpty().withMessage("Title is required"),
 ];
 
+// Authenticate all routes
+router.use(authenticate);
+
 // Get all tasks
-router.get("/", async (req, res) => {
+router.get("/", async (req: AuthRequest, res: Response) => {
   try {
-    const tasks = await Task.find();
+    const tasks = await Task.find({ userId: req.user!.id });
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch tasks" });
@@ -33,7 +36,7 @@ router.post(
   "/",
   validateTask,
   async (
-    req: Request<{}, {}, TaskRequestBody>,
+    req: AuthRequest,
     res: Response,
     next: NextFunction
   ): Promise<void> => {

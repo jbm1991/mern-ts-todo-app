@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import taskRoutes from "./routes/taskRoutes";
+import authRoutes from "./routes/authRoutes";
+import helmet from "helmet";
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -11,8 +13,10 @@ const PORT = process.env.PORT || 4444;
 const MONGO_URI = process.env.MONGO_URI as string;
 
 // Middleware
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
 // error handler middleware
 app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
   if (error instanceof Error) {
@@ -39,6 +43,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // Task routes
+app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 
 // Start server
