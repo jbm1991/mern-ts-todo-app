@@ -9,8 +9,16 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "completed" | "incomplete">(
-    "all"
+    () => {
+      const stored = localStorage.getItem("taskFilter");
+      if (stored === "completed" || stored === "incomplete") return stored;
+      return "all";
+    }
   );
+
+  useEffect(() => {
+    localStorage.setItem("taskFilter", filter);
+  }, [filter]);
 
   useEffect(() => {
     fetchTasks().then((tasks) => {
