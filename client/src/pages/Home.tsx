@@ -4,6 +4,7 @@ import TaskList from "../components/TaskList";
 import { Task } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import ThemeToggle from "../components/ThemeToggle";
 
 const Home = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -92,8 +93,9 @@ const Home = () => {
 
   return (
     <div className="container">
-      <h1>Task List</h1>
+      <ThemeToggle />
       <button onClick={handleLogout}>Logout</button>
+      <h1>Task List</h1>
 
       <p>
         ✅ Completed: {completedCount} ⭕ Incomplete: {incompleteCount}
