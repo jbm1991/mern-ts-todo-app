@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import { addTask, fetchTasks, deleteTask, updateTask } from "../api/tasks";
 import TaskList from "../components/TaskList";
 import { Task } from "../types";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -16,41 +18,50 @@ const Home = () => {
     }
   );
 
+  const { token } = useAuth();
+
   useEffect(() => {
     localStorage.setItem("taskFilter", filter);
   }, [filter]);
 
   useEffect(() => {
-    fetchTasks().then((tasks) => {
+    if (!token) return;
+    fetchTasks(token).then((tasks) => {
       setTasks(tasks);
       setLoading(false);
     });
-  }, []);
+  }, [token]);
 
   const handleAddTask = useCallback(async () => {
     if (!newTask.trim()) return;
+    if (!token) return;
 
-    const createdTask = await addTask(newTask);
+    const createdTask = await addTask(newTask, token);
     if (createdTask) {
       setTasks((prev) => [...prev, createdTask]);
       setNewTask("");
     } else {
       setError("Failed to add task. Try again.");
     }
-  }, [newTask]);
+  }, [newTask, token]);
 
-  const handleDeleteTask = useCallback(async (taskId: string) => {
-    const isDeleted = await deleteTask(taskId);
-    if (isDeleted) {
-      setTasks((prev) => prev.filter((task) => task._id !== taskId));
-    } else {
-      setError("Failed to delete task. Try again.");
-    }
-  }, []);
+  const handleDeleteTask = useCallback(
+    async (taskId: string) => {
+      if (!token) return;
+      const isDeleted = await deleteTask(taskId, token);
+      if (isDeleted) {
+        setTasks((prev) => prev.filter((task) => task._id !== taskId));
+      } else {
+        setError("Failed to delete task. Try again.");
+      }
+    },
+    [token]
+  );
 
   const handleToggleTask = useCallback(
     async (taskId: string, completed: boolean) => {
-      const updatedTask = await updateTask(taskId, !completed);
+      if (!token) return;
+      const updatedTask = await updateTask(taskId, !completed, token);
       if (updatedTask) {
         setTasks((prev) =>
           prev.map((task) => (task._id === taskId ? updatedTask : task))
@@ -59,7 +70,7 @@ const Home = () => {
         setError("Failed to update task. Try again.");
       }
     },
-    []
+    [token]
   );
 
   const filteredTasks = tasks.filter((task) => {
@@ -71,9 +82,18 @@ const Home = () => {
   const completedCount = tasks.filter((t) => t.completed).length;
   const incompleteCount = tasks.length - completedCount;
 
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <div className="container">
       <h1>Task List</h1>
+      <button onClick={handleLogout}>Logout</button>
 
       <p>
         ✅ Completed: {completedCount} ⭕ Incomplete: {incompleteCount}

@@ -48,7 +48,7 @@ router.post(
 
     try {
       const { title } = req.body;
-      const newTask = await Task.create({ title });
+      const newTask = await Task.create({ title, userId: req.user!.id });
       res.status(201).json(newTask);
     } catch (error) {
       next(error);

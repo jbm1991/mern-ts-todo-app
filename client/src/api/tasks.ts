@@ -1,8 +1,10 @@
 const API_URL = "http://localhost:4444/api/tasks";
 
-export const fetchTasks = async () => {
+export const fetchTasks = async (token: string) => {
   try {
-    const response = await fetch(API_URL);
+    const response = await fetch(API_URL, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     if (!response.ok) throw new Error("Failed to fetch tasks");
     return await response.json();
   } catch (error) {
@@ -11,11 +13,14 @@ export const fetchTasks = async () => {
   }
 };
 
-export const addTask = async (title: string) => {
+export const addTask = async (title: string, token: string) => {
   try {
     const response = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({ title }),
     });
     if (!response.ok) throw new Error("Failed to add task");
@@ -26,10 +31,11 @@ export const addTask = async (title: string) => {
   }
 };
 
-export const deleteTask = async (taskId: string) => {
+export const deleteTask = async (taskId: string, token: string) => {
   try {
     const response = await fetch(`${API_URL}/${taskId}`, {
       method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
     });
     if (!response.ok) throw new Error("Failed to delete task");
     return true;
@@ -39,11 +45,18 @@ export const deleteTask = async (taskId: string) => {
   }
 };
 
-export const updateTask = async (taskId: string, completed: boolean) => {
+export const updateTask = async (
+  taskId: string,
+  completed: boolean,
+  token: string
+) => {
   try {
     const response = await fetch(`${API_URL}/${taskId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({ completed }),
     });
     if (!response.ok) throw new Error("Failed to update task");
