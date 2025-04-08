@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import taskRoutes from "./routes/taskRoutes";
 import authRoutes from "./routes/authRoutes";
 import helmet from "helmet";
+import compression from "compression";
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -13,6 +14,7 @@ const PORT = process.env.PORT || 4444;
 const MONGO_URI = process.env.MONGO_URI as string;
 
 // Middleware
+app.use(compression());
 app.use(helmet());
 app.use(cors());
 app.use(express.json());

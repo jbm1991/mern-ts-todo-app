@@ -18,4 +18,7 @@ const TaskSchema: Schema = new Schema(
   { timestamps: true }
 );
 
+TaskSchema.index({ userId: 1 });
+TaskSchema.index({ completed: 1 });
+
 export default mongoose.model<ITask>("Task", TaskSchema);
